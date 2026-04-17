@@ -111,6 +111,10 @@ header[data-testid="stHeader"] {
     border-right: 1px solid rgba(0, 210, 255, 0.08);
 }
 
+[data-testid="stSidebarUserContent"] {
+    overflow-y: auto !important;
+}
+
 
 /* Ensure radio buttons are visible */
 div[role="radiogroup"] {
