@@ -1,0 +1,5 @@
+{
+  "macro_f1": 0.9483,
+  "model": "MobileNetV2",
+  "epochs_trained": 18
+}

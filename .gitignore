@@ -1,0 +1,67 @@
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# VS Code / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Data and Models
+*.csv
+*.dat
+*.out
+*.log
+*.model
+*.ckpt
+*.pt
+*.pth
+*.h5
+data/
+datasets/
+models/
+
+# MLOps (MLflow, DVC)
+mlruns/
+*.db
+mlflow.db
+.dvc/config.local
+.dvc/cache
+.dvc/tmp
+*.dvc
+
+# Streamlit
+.streamlit/

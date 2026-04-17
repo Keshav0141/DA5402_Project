@@ -1,0 +1,5 @@
+{
+  "macro_f1": 0.8062,
+  "model": "BaseCNN",
+  "epochs_trained": 20
+}

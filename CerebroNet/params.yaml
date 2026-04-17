@@ -1,0 +1,24 @@
+data:
+  raw_dir: "data/raw"
+  v1_dir: "data/v1_resized"
+  v2_dir: "data/v2_augmented"
+  img_size: 224
+  test_split: 0.1
+  val_split: 0.2
+  random_seed: 42
+  classes:
+    - glioma
+    - meningioma
+    - notumor
+    - pituitary
+
+train:
+  batch_size: 16
+  epochs: 20
+  learning_rate: 0.0001
+  early_stopping_patience: 5
+  model: "mobilenetv2"
+
+mlflow:
+  experiment_name: "CerebroNet"
+  tracking_uri: "http://localhost:5000"

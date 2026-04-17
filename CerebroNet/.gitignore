@@ -1,0 +1,13 @@
+cat > .gitignore << EOF
+__pycache__/
+*.pyc
+*.pth
+*.h5
+*.pkl
+.env
+mlruns/
+*.egg-info/
+.dvc/cache/
+data/raw/
+data/v1_resized/
+data/v2_augmented/

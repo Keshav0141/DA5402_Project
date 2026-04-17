@@ -1,0 +1,115 @@
+services:
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: cerebronet_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models
+      - ./params.yaml:/app/params.yaml
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - cerebronet_network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: cerebronet_frontend
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./frontend:/app/frontend
+    environment:
+      - API_URL=http://backend:8000
+    depends_on:
+      - backend
+    networks:
+      - cerebronet_network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: cerebronet_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - cerebronet_network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: cerebronet_grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - cerebronet_network
+
+  airflow:
+    image: apache/airflow:2.8.1
+    container_name: cerebronet_airflow
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - AIRFLOW__WEBSERVER__WORKERS=1
+      - AIRFLOW__CORE__PARALLELISM=1
+      - AIRFLOW__CORE__DAG_CONCURRENCY=1
+      - _AIRFLOW_DB_UPGRADE=true
+      - _AIRFLOW_WWW_USER_CREATE=true
+      - _AIRFLOW_WWW_USER_USERNAME=admin
+      - _AIRFLOW_WWW_USER_PASSWORD=admin
+      - AIRFLOW__WEBSERVER__WEB_SERVER_MASTER_TIMEOUT=600
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - airflow_db:/opt/airflow
+    ports:
+      - "8080:8080"
+    command: >
+      bash -c "
+        airflow db migrate &&
+        airflow users create --username admin --password admin --firstname Admin --lastname Admin --role Admin --email admin@example.com || true &&
+        airflow scheduler -D &&
+        sleep 10 &&
+        exec airflow webserver --port 8080 --workers 1 --worker-timeout 300
+      "
+    networks:
+      - cerebronet_network
+
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
+    container_name: cerebronet_mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    command: >
+      bash -c "
+        mlflow db upgrade sqlite:///mlflow.db &&
+        mlflow ui --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlartifacts --host 0.0.0.0 --port 5000
+      "
+    networks:
+      - cerebronet_network
+
+networks:
+  cerebronet_network:
+    driver: bridge
+
+volumes:
+  grafana_data:
+  airflow_db:

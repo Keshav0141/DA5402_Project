@@ -1,0 +1,80 @@
+stages:
+  prepare:
+    cmd: python src/pipeline/prepare.py
+    deps:
+      - src/pipeline/prepare.py
+      - data/raw
+    outs:
+      - data/v1_resized
+    params:
+      - data.raw_dir
+      - data.v1_dir
+      - data.classes
+
+  transform:
+    cmd: python src/pipeline/transform.py
+    deps:
+      - src/pipeline/transform.py
+      - data/v1_resized
+    outs:
+      - data/v2_augmented
+    params:
+      - data.v1_dir
+      - data.v2_dir
+      - data.img_size
+      - data.random_seed
+      - data.classes
+
+  train_baseline:
+    cmd: python -u src/training/train_baseline_cnn.py
+    deps:
+      - src/training/train_baseline_cnn.py
+      - data/v1_resized
+    outs:
+      - models/artifacts/baseline_cnn_best.pth
+    metrics:
+      - models/artifacts/metrics_baseline_cnn.json:
+          cache: false
+    params:
+      - train.batch_size
+      - train.epochs
+      - train.learning_rate
+      - train.early_stopping_patience
+      - data.v1_dir
+      - data.img_size
+
+  train_mobilenet:
+    cmd: python -u src/training/train_mobilenet.py
+    deps:
+      - src/training/train_mobilenet.py
+      - data/v2_augmented
+    outs:
+      - models/artifacts/mobilenetv2_best.pth
+    metrics:
+      - models/artifacts/metrics_mobilenet.json:
+          cache: false
+    params:
+      - train.batch_size
+      - train.epochs
+      - train.learning_rate
+      - train.early_stopping_patience
+      - data.v2_dir
+      - data.img_size
+
+  train_efficientnet:
+    cmd: python -u src/training/train_efficientnet.py
+    deps:
+      - src/training/train_efficientnet.py
+      - data/v2_augmented
+    outs:
+      - models/artifacts/efficientnet_best.pth
+    metrics:
+      - models/artifacts/metrics_efficientnet.json:
+          cache: false
+    params:
+      - train.batch_size
+      - train.epochs
+      - train.learning_rate
+      - train.early_stopping_patience
+      - data.v2_dir
+      - data.img_size
