@@ -132,7 +132,7 @@ if page == "Predict":
     # Inject the image into the root container to avoid column overflow clipping
     st.markdown(f'''
     <div style="position:relative; width:100%; height:0px; overflow:visible; z-index:0;">
-        <img class="hero-image-bg" src="data:image/png;base64,{img_b64}" style="position: absolute; top: 0px; left: 55%; transform: translateX(-50%); width: 700px; height: auto; object-fit: contain; z-index: 0; pointer-events: none; opacity: 0.85; filter: drop-shadow(0 0 50px rgba(0, 210, 255, 0.4)) brightness(1.2); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 65%); mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 65%);">
+        <img class="hero-image-bg" src="data:image/png;base64,{img_b64}" style="position: absolute; top: 0px; left: 47%; transform: translateX(-50%); width: 700px; height: auto; object-fit: contain; z-index: 0; pointer-events: none; opacity: 0.85; filter: drop-shadow(0 0 50px rgba(180, 50, 255, 0.5)) brightness(1.2); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 65%); mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 65%);">
     </div>
     ''', unsafe_allow_html=True)
 
