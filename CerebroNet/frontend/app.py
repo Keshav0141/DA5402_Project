@@ -117,24 +117,30 @@ with st.sidebar:
 # Main content
 if page == "Predict":
     import base64
-    def get_base64_file(path):
+    def get_base64_file(filename):
+        import os
         try:
+            # Construct absolute path relative to this script
+            path = os.path.join(os.path.dirname(__file__), filename)
             with open(path, "rb") as f:
                 return base64.b64encode(f.read()).decode()
         except Exception:
             return ""
 
-    video_b64 = get_base64_file("frontend/Brain_Tumor.mp4")
+    img_b64 = get_base64_file("brain_bg.png")
 
-    # ── Full Page Video Background ──
+    # Inject the image into the root container to avoid column overflow clipping
     st.markdown(f'''
-    <video class="hero-video-bg" autoplay muted loop playsinline>
-        <source src="data:video/mp4;base64,{video_b64}" type="video/mp4">
-    </video>
-    <div class="hero-video-overlay"></div>
+    <div style="position:relative; width:100%; height:0px; overflow:visible; z-index:0;">
+        <img class="hero-image-bg" src="data:image/png;base64,{img_b64}" style="position: absolute; top: 0px; left: 55%; transform: translateX(-50%); width: 700px; height: auto; object-fit: contain; z-index: 0; pointer-events: none; opacity: 0.85; filter: drop-shadow(0 0 50px rgba(0, 210, 255, 0.4)) brightness(1.2); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 65%); mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 65%);">
+    </div>
     ''', unsafe_allow_html=True)
 
-    col_hero, col_gap, col_upload = st.columns([13, 1, 8])
+    col_hero, col_gap, col_upload = st.columns([10, 2, 8])
+
+    with col_gap:
+        # Gap is left intentionally empty to just create horizontal breathing room
+        pass
 
     with col_hero:
         html_content = f"""<div class="hero-container">
@@ -453,18 +459,26 @@ elif page == "Model Tracker":
     prod_model_row = df[df["Model"] == prod_model_name].iloc[0] if prod_model_name in df["Model"].values else df.iloc[0]
     
     m1, m2, m3 = st.columns(3)
-    m1.metric("Production Deployed Model", prod_model_name, "Chosen for Low Latency")
-    m2.metric(f"Production Macro F1", f"{prod_model_row['Macro F1']:.3f}", "-0.012 vs EfficientNet")
-    m3.metric("Training Speed", f"{prod_model_row['Speed / Epoch (s)']:.1f}s / epoch", "8x Faster than EfficientNet")
+    try:
+        f1_val = float(prod_model_row['Macro F1'])
+        speed_val = float(prod_model_row['Speed / Epoch (s)'])
+        m1.metric("Production Deployed Model", prod_model_name, "Chosen for Low Latency")
+        m2.metric(f"Production Macro F1", f"{f1_val:.3f}", "-0.012 vs EfficientNet")
+        m3.metric("Training Speed", f"{speed_val:.1f}s / epoch", "8x Faster than EfficientNet")
+    except Exception as e:
+        st.error(f"Error rendering metrics: {e}")
 
     st.markdown('<h3 class="glow-header" style="margin-top: 2rem;">Run Comparison Matrix</h3>', unsafe_allow_html=True)
     
     # Styled Table
     styled_df = df.copy()
-    styled_df["Macro F1"] = styled_df["Macro F1"].apply(lambda x: f"{x:.3f}")
-    styled_df["Validation Acc"] = styled_df["Validation Acc"].apply(lambda x: f"{x*100:.1f}%")
-    styled_df["Speed / Epoch (s)"] = styled_df["Speed / Epoch (s)"].apply(lambda x: f"{x:.1f}s")
-    
+    try:
+        styled_df["Macro F1"] = styled_df["Macro F1"].apply(lambda x: f"{float(x):.3f}")
+        styled_df["Validation Acc"] = styled_df["Validation Acc"].apply(lambda x: f"{float(x)*100:.1f}%")
+        styled_df["Speed / Epoch (s)"] = styled_df["Speed / Epoch (s)"].apply(lambda x: f"{float(x):.1f}s")
+    except Exception as e:
+        pass
+        
     st.dataframe(
         styled_df,
         column_config={
