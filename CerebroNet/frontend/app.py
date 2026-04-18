@@ -132,7 +132,7 @@ if page == "Predict":
     # Inject the image into the root container to avoid column overflow clipping
     st.markdown(f'''
     <div style="position:relative; width:100%; height:0px; overflow:visible; z-index:0;">
-        <img class="hero-image-bg" src="data:image/png;base64,{img_b64}" style="position: absolute; top: -10px; left: 49%; transform: translateX(-50%); width: 550px; height: auto; object-fit: contain; z-index: 0; pointer-events: none; opacity: 0.75; filter: drop-shadow(0 0 50px rgba(180, 50, 255, 0.5)) brightness(1.2); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 65%); mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 65%);">
+        <img class="hero-image-bg-purple" src="data:image/png;base64,{img_b64}" style="position: absolute; top: -120px; left: 50%; transform: translateX(-50%); width: 750px; height: auto; object-fit: contain; z-index: 0; pointer-events: none; opacity: 0.9; filter: drop-shadow(0 0 50px rgba(180, 50, 255, 0.5)) hue-rotate(90deg) brightness(1.2); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 70%); mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 70%);">
     </div>
     ''', unsafe_allow_html=True)
 
@@ -281,12 +281,12 @@ if page == "Predict":
                         <div style="
                             background: linear-gradient(180deg, rgba(20,20,25,0.8) 0%, rgba(10,10,15,0.95) 100%);
                             border: 1px solid {pred_color}40;
-                            border-top: 4px solid {pred_color};
-                            border-radius: 16px;
-                            padding: 2rem;
-                            margin: 2rem 0;
+                            border-top: 3px solid {pred_color};
+                            border-radius: 12px;
+                            padding: 1rem;
+                            margin: 1rem 0;
                             text-align: center;
-                            box-shadow: 0 20px 50px {pred_color}20;
+                            box-shadow: 0 10px 30px {pred_color}20;
                             position: relative;
                             overflow: hidden;
                         ">
@@ -295,20 +295,20 @@ if page == "Predict":
                                 background: radial-gradient(circle, {pred_color}10 0%, transparent 60%);
                                 pointer-events: none;
                             "></div>
-                            <h4 style="color: {pred_color}; letter-spacing: 2px; font-weight: 800; text-transform: uppercase; margin-bottom: 0.5rem; font-size: 1rem;">
+                            <h4 style="color: {pred_color}; letter-spacing: 2px; font-weight: 800; text-transform: uppercase; margin-bottom: 0.5rem; font-size: 0.75rem;">
                                 PREDICTION RESULT
                             </h4>
-                            <h2 style="color: white; font-size: 3.5rem; font-weight: 900; margin-bottom: 2rem; letter-spacing: -1px; text-shadow: 0 0 20px {pred_color}80;">
-                                {emoji} {pred.upper()}
+                            <h2 style="color: white; font-size: 1.6rem; font-weight: 900; margin-bottom: 1rem; letter-spacing: 0px; text-shadow: 0 0 20px {pred_color}80;">
+                                <span style="font-size: 1.4rem; vertical-align: middle;">{emoji}</span> <span style="vertical-align: middle;">{pred.upper()}</span>
                             </h2>
-                            <div style="display: flex; gap: 1rem; justify-content: center;">
-                                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; width: 45%;">
-                                    <p style="color: #a4b0be; font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.5rem;">CONFIDENCE</p>
-                                    <h3 style="color: white; font-size: 2rem; font-weight: 800; margin: 0;">{conf_str}</h3>
+                            <div style="display: flex; gap: 0.8rem; justify-content: center;">
+                                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 0.8rem; width: 45%;">
+                                    <p style="color: #a4b0be; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.3rem;">CONFIDENCE</p>
+                                    <h3 style="color: white; font-size: 1.2rem; font-weight: 800; margin: 0;">{conf_str}</h3>
                                 </div>
-                                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; width: 45%;">
-                                    <p style="color: #a4b0be; font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.5rem;">INFERENCE TIME</p>
-                                    <h3 style="color: white; font-size: 2rem; font-weight: 800; margin: 0;">{lat_str}</h3>
+                                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 0.8rem; width: 45%;">
+                                    <p style="color: #a4b0be; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.3rem;">INFERENCE TIME</p>
+                                    <h3 style="color: white; font-size: 1.2rem; font-weight: 800; margin: 0;">{lat_str}</h3>
                                 </div>
                             </div>
                         </div>
