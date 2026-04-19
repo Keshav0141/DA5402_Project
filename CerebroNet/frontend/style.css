@@ -126,10 +126,10 @@ header[data-testid="stHeader"] {
 }
 
 [data-testid="stSidebar"] > div:first-child {
-    background: rgba(5, 8, 18, 0.95) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    border-right: 1px solid rgba(180, 50, 255, 0.15);
+    background: linear-gradient(180deg, rgba(8, 6, 20, 0.97) 0%, rgba(5, 3, 15, 0.99) 100%) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    border-right: 1px solid rgba(180, 50, 255, 0.12);
 }
 
 [data-testid="stSidebarUserContent"] {
@@ -139,41 +139,85 @@ header[data-testid="stHeader"] {
 }
 
 [data-testid="stSidebar"] ::-webkit-scrollbar {
-    width: 6px !important;
+    width: 4px !important;
     background: transparent !important;
 }
 [data-testid="stSidebar"] ::-webkit-scrollbar-thumb {
-    background: rgba(180, 50, 255, 0.4) !important;
+    background: rgba(180, 50, 255, 0.3) !important;
     border-radius: 10px !important;
 }
 
-
-/* Ensure radio buttons are visible */
+/* ── Radio Navigation — Clean, borderless ────────────────────── */
 div[role="radiogroup"] {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
+    gap: 2px !important;
 }
+
+/* Hide "Navigation" label text */
+[data-testid="stSidebar"] .stRadio > label {
+    font-size: 0.65rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 2px !important;
+    text-transform: uppercase !important;
+    color: rgba(180, 50, 255, 0.6) !important;
+    margin-bottom: 8px !important;
+}
+
 div[role="radiogroup"] label {
     cursor: pointer;
     background: transparent !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    margin: 1px 0 !important;
+    transition: all 0.25s ease !important;
+}
+
+div[role="radiogroup"] label:hover {
+    background: rgba(180, 50, 255, 0.08) !important;
+}
+
+/* Active/selected radio item */
+div[role="radiogroup"] label[data-checked="true"],
+div[role="radiogroup"] label:has(input:checked) {
+    background: rgba(180, 50, 255, 0.12) !important;
+    border-left: 3px solid #b432ff !important;
+    box-shadow: 0 0 20px rgba(180, 50, 255, 0.08);
+}
+
+/* Radio dot styling */
+div[role="radiogroup"] label span[data-testid="stMarkdownContainer"] {
+    color: #c0c7d0 !important;
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+}
+
+div[role="radiogroup"] label[data-checked="true"] span[data-testid="stMarkdownContainer"],
+div[role="radiogroup"] label:has(input:checked) span[data-testid="stMarkdownContainer"] {
+    color: #ffffff !important;
+    font-weight: 600 !important;
 }
 
 /* ── Sidebar Brand ───────────────────────────────────────────── */
 .sidebar-brand {
     font-size: 1.5rem;
     font-weight: 900;
-    color: #ffffff;
-    padding: 0.5rem 0 1rem 0;
+    background: linear-gradient(135deg, #ffffff 0%, #d175ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    padding: 0.8rem 0 1.2rem 0;
     letter-spacing: -0.5px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(180, 50, 255, 0.1);
     margin-bottom: 1rem;
 }
 
 /* ── Status Panel ────────────────────────────────────────────── */
 .status-panel {
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.05);
+    background: rgba(180, 50, 255, 0.03);
+    border: 1px solid rgba(180, 50, 255, 0.08);
     border-radius: 10px;
-    padding: 0.8rem 1rem;
+    padding: 0.7rem 1rem;
     margin-bottom: 1rem;
 }
 
@@ -181,9 +225,9 @@ div[role="radiogroup"] label {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     color: #a4b0be;
-    padding: 4px 0;
+    padding: 3px 0;
 }
 
 .status-dot {
@@ -289,31 +333,7 @@ div[role="radiogroup"] label {
     margin: 1rem 0 0.5rem 0;
 }
 
-/* ── Radio buttons as nav pills ──────────────────────────────── */
-[data-testid="stSidebar"] [role="radiogroup"] {
-    gap: 4px !important;
-}
-
-[data-testid="stSidebar"] [role="radiogroup"] label {
-    background: rgba(255,255,255,0.02) !important;
-    border: 1px solid rgba(255,255,255,0.05) !important;
-    border-radius: 8px !important;
-    padding: 8px 12px !important;
-    color: #a4b0be !important;
-    transition: all 0.2s ease !important;
-}
-
-[data-testid="stSidebar"] [role="radiogroup"] label:hover {
-    border-color: rgba(180, 50, 255, 0.4) !important;
-    color: #ffffff !important;
-}
-
-[data-testid="stSidebar"] [role="radiogroup"] label[data-checked="true"],
-[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
-    background: rgba(180, 50, 255, 0.15) !important;
-    border-color: rgba(180, 50, 255, 0.8) !important;
-    color: #ffffff !important;
-}
+/* Duplicate radio rules removed — handled in the Radio Navigation section above */
 
 /* ── Headers ─────────────────────────────────────────────────── */
 .main-header {
@@ -528,7 +548,7 @@ div[role="radiogroup"] label {
 }
 
 [data-testid="stMetric"] [data-testid="stMetricDelta"] {
-    color: #2ecc71 !important;
+    color: #d175ff !important;
     font-size: 0.8rem !important;
 }
 
@@ -692,12 +712,12 @@ div[role="radiogroup"] label {
 }
 
 .privacy-box-small {
-    background: rgba(46, 204, 113, 0.05);
-    border: 1px solid rgba(46, 204, 113, 0.3);
+    background: rgba(180, 50, 255, 0.05);
+    border: 1px solid rgba(180, 50, 255, 0.25);
     padding: 0.8rem;
     border-radius: 8px;
     font-size: 0.85rem;
-    color: #2ecc71;
+    color: #d175ff;
     margin-bottom: 1rem;
     text-align: center;
 }

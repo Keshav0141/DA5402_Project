@@ -179,7 +179,22 @@ if page == "Predict":
     </div>
     ''', unsafe_allow_html=True)
 
-    # SECTION 3: CENTERED UPLOAD
+    # SECTION 3: MODEL CREDENTIALS
+    st.markdown('''
+    <div class="hero-stats" style="display: flex; justify-content: center; gap: 1.5rem; margin: 0 auto 2rem auto; max-width: 700px;">
+        <div class="stat-item" style="text-align: center; flex: 1;">
+            <h4>94.80%</h4><p>Best Accuracy</p>
+        </div>
+        <div class="stat-item" style="text-align: center; flex: 1;">
+            <h4>11,200</h4><p>Training Images</p>
+        </div>
+        <div class="stat-item" style="text-align: center; flex: 1;">
+            <h4>3</h4><p>Models Trained</p>
+        </div>
+    </div>
+    ''', unsafe_allow_html=True)
+
+    # SECTION 4: CENTERED UPLOAD
     col_left, col_center, col_right = st.columns([1, 2, 1])
     
     with col_center:
@@ -204,7 +219,7 @@ if page == "Predict":
             else:
                 image = Image.open(uploaded)
                 
-                st.image(image, use_container_width=True)
+                st.image(image, width=300)
                 st.markdown(f'<div style="text-align: center; font-size: 0.75rem; color: #a4b0be; margin-bottom: 8px;">File Size: {file_size_mb:.2f}MB</div>', unsafe_allow_html=True)
                 classify_btn = st.button("⚡ Classify Image", use_container_width=True, type="primary")
                 
@@ -267,6 +282,30 @@ if page == "Predict":
                         }
                         emoji = color_map.get(pred, "⚪")
 
+                        # Dynamic brain color based on prediction
+                        # Base brain image is cyan/blue (~180° hue)
+                        # hue-rotate shifts from that base:
+                        #   Red (0°)    = rotate by 180deg from cyan
+                        #   Yellow (60°) = rotate by 240deg from cyan
+                        #   Green (120°) = rotate by 300deg from cyan  
+                        #   Blue (240°)  = rotate by 60deg from cyan
+                        hue_map = {
+                            "glioma":     "155deg",    # → Red
+                            "meningioma": "180deg",    # → Yellow/Orange
+                            "notumor":    "240deg",    # → Green
+                            "pituitary":  "0deg"       # → Blue
+                        }
+                        brain_hue = hue_map.get(pred, "90deg")
+                        st.markdown(f'''
+                        <style>
+                        @keyframes brainGlow {{
+                            0%   {{ filter: hue-rotate({brain_hue}) brightness(1.2) contrast(1.1); transform: scale(1); }}
+                            50%  {{ filter: hue-rotate({brain_hue}) brightness(1.6) contrast(1.2); transform: scale(1.04); }}
+                            100% {{ filter: hue-rotate({brain_hue}) brightness(1.2) contrast(1.1); transform: scale(1); }}
+                        }}
+                        </style>
+                        ''', unsafe_allow_html=True)
+
                         pred_color = "#e74c3c" if pred != "notumor" else "#2ecc71"
                         conf_str = f"{conf*100:.1f}%"
                         lat_str = f"{lat:.1f}ms"
@@ -323,14 +362,7 @@ if page == "Predict":
                         )
                         st.plotly_chart(fig, use_container_width=True)
                         
-                        # SECTION 4: METRICS FOOTER
-                        st.markdown("""
-                        <div class="hero-stats" style="margin-top: 2rem; display: flex; justify-content: space-around;">
-                            <div class="stat-item" style="text-align: center;"><h4>94.80%</h4><p>Best accuracy</p></div>
-                            <div class="stat-item" style="text-align: center;"><h4>11,200</h4><p>Training images</p></div>
-                            <div class="stat-item" style="text-align: center;"><h4>4</h4><p>Strategies</p></div>
-                        </div>
-                        """, unsafe_allow_html=True)
+
 
 elif page == "Privacy Policy":
     st.markdown('<p class="upload-title">SECURITY PROTOCOL</p>', unsafe_allow_html=True)
@@ -500,7 +532,7 @@ elif page == "Model Tracker":
         x=df["Macro F1"], 
         y=df["Model"], 
         orientation='h',
-        marker_color=["#4A90E2" if model == "MobileNetV2" else "#2A2A3E" for model in df["Model"]]
+        marker_color=["#b432ff" if model == "MobileNetV2" else "#2A2A3E" for model in df["Model"]]
     ))
     fig.update_layout(
         xaxis_title="Macro F1 Score (Performance)",
