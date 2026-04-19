@@ -583,5 +583,19 @@ elif page == "Contact Us":
             if not name or not email or not message:
                 st.error("Validation Failed. Please ensure all required packet fields are populated.")
             else:
-                st.success("Transmission Received. Our technical team will inspect the payload shortly.")
+                import json
+                from datetime import datetime
+                inquiry = {
+                    "timestamp": datetime.now().isoformat(),
+                    "name": name,
+                    "email": email,
+                    "type": inquiry_type,
+                    "message": message
+                }
+                try:
+                    with open("inquiries.json", "a") as f:
+                        f.write(json.dumps(inquiry) + "\n")
+                    st.success("Transmission Received. Our technical team will inspect the payload shortly.")
+                except Exception as e:
+                    st.error(f"Failed to transmit packet: {str(e)}")
     st.markdown('</div>', unsafe_allow_html=True)

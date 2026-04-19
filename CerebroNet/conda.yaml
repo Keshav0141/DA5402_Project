@@ -1,0 +1,23 @@
+name: cerebronet
+channels:
+  - defaults
+  - pytorch
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+    - fastapi==0.117.1
+    - uvicorn==0.42.0
+    - prometheus-client==0.24.1
+    - scikit-learn==1.5.2
+    - pillow==12.0.0
+    - numpy==1.26.3
+    - pyyaml==6.0.1
+    - python-multipart==0.0.22
+    - torch
+    - torchvision
+    - mlflow
+    - streamlit
+    - plotly
+    - dvc
+    - apache-airflow

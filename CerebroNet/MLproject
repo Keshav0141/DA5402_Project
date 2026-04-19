@@ -1,0 +1,10 @@
+name: CerebroNet
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    command: "python src/api/main.py"
+  train_mobilenet:
+    command: "python src/training/train_mobilenet.py"
+  train_efficientnet:
+    command: "python src/training/train_efficientnet.py"
