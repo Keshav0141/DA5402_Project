@@ -194,6 +194,16 @@ if page == "Predict":
     </div>
     ''', unsafe_allow_html=True)
 
+    # SECTION 3.5: COLOR PROTOCOL LEGEND
+    st.markdown('''
+    <div style="display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 3rem; background: rgba(10, 10, 15, 0.4); padding: 0.8rem; border-radius: 12px; border: 1px solid rgba(180, 50, 255, 0.1); max-width: 600px; margin-left: auto; margin-right: auto;">
+        <span style="color: #ff4757; font-weight: 800; font-size: 0.85rem; letter-spacing: 1px; text-shadow: 0 0 10px rgba(255, 71, 87, 0.5);">🔴 GLIOMA</span>
+        <span style="color: #ffa502; font-weight: 800; font-size: 0.85rem; letter-spacing: 1px; text-shadow: 0 0 10px rgba(255, 165, 2, 0.5);">🟡 MENINGIOMA</span>
+        <span style="color: #2ed573; font-weight: 800; font-size: 0.85rem; letter-spacing: 1px; text-shadow: 0 0 10px rgba(46, 213, 115, 0.5);">🟢 NO TUMOR</span>
+        <span style="color: #1e90ff; font-weight: 800; font-size: 0.85rem; letter-spacing: 1px; text-shadow: 0 0 10px rgba(30, 144, 255, 0.5);">🔵 PITUITARY</span>
+    </div>
+    ''', unsafe_allow_html=True)
+
     # SECTION 4: CENTERED UPLOAD
     col_left, col_center, col_right = st.columns([1, 2, 1])
     
@@ -306,7 +316,14 @@ if page == "Predict":
                         </style>
                         ''', unsafe_allow_html=True)
 
-                        pred_color = "#e74c3c" if pred != "notumor" else "#2ecc71"
+                        hex_map = {
+                            "glioma": "#ff4757",
+                            "meningioma": "#ffa502",
+                            "notumor": "#2ed573",
+                            "pituitary": "#1e90ff"
+                        }
+                        pred_color = hex_map.get(pred, "#ffffff")
+                        
                         conf_str = f"{conf*100:.1f}%"
                         lat_str = f"{lat:.1f}ms"
                         
@@ -331,7 +348,7 @@ if page == "Predict":
                             <h4 style="color: {pred_color}; letter-spacing: 2px; font-weight: 800; text-transform: uppercase; margin-bottom: 0.5rem; font-size: 0.75rem;">
                                 PREDICTION RESULT
                             </h4>
-                            <h2 style="color: white; font-size: 1.6rem; font-weight: 900; margin-bottom: 1rem; letter-spacing: 0px; text-shadow: 0 0 20px {pred_color}80;">
+                            <h2 style="color: {pred_color}; font-size: 1.6rem; font-weight: 900; margin-bottom: 1rem; letter-spacing: 0px; text-shadow: 0 0 20px {pred_color}80;">
                                 <span style="font-size: 1.4rem; vertical-align: middle;">{emoji}</span> <span style="vertical-align: middle;">{pred.upper()}</span>
                             </h2>
                             <div style="display: flex; gap: 0.8rem; justify-content: center;">
