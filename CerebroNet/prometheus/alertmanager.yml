@@ -1,0 +1,16 @@
+route:
+  group_by: ['alertname']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'email-alert'
+
+receivers:
+- name: 'email-alert'
+  email_configs:
+  - to: 'admin@cerebronet.local'
+    from: 'alertmanager@cerebronet.local'
+    smarthost: 'smtp.mailtrap.io:2525'
+    auth_username: 'INSERT_MAILTRAP_USERNAME_HERE'
+    auth_password: 'INSERT_MAILTRAP_PASSWORD_HERE'
+    require_tls: false

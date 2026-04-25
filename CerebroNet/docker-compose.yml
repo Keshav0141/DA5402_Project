@@ -43,6 +43,15 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
+    networks:
+      - cerebronet_network
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: cerebronet_node_exporter
+    ports:
+      - "9100:9100"
     networks:
       - cerebronet_network
 
@@ -55,6 +64,9 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/cerebronet_observability_dashboard.json:/var/lib/grafana/dashboards/cerebronet.json
     networks:
       - cerebronet_network
 
@@ -73,6 +85,7 @@ services:
       - _AIRFLOW_WWW_USER_USERNAME=admin
       - _AIRFLOW_WWW_USER_PASSWORD=admin
       - AIRFLOW__WEBSERVER__WEB_SERVER_MASTER_TIMEOUT=600
+      - _PIP_ADDITIONAL_REQUIREMENTS=pydantic prometheus_client requests beautifulsoup4
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - airflow_db:/opt/airflow

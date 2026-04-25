@@ -11,12 +11,15 @@ import torch.nn as nn
 from torchvision import transforms, models
 from PIL import Image, ExifTags
 import yaml
+import base64
+import matplotlib.pyplot as plt
+import numpy as np
 
 from fastapi import FastAPI, File, UploadFile, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from prometheus_client import (
-    Counter, Histogram, Gauge,
+    Counter, Histogram, Gauge, Summary,
     generate_latest, CONTENT_TYPE_LATEST
 )
 from fastapi.responses import Response
@@ -38,7 +41,12 @@ ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/jpg"}
 REQUEST_COUNT = Counter(
     "cerebronet_requests_total",
     "Total prediction requests",
-    ["endpoint", "status"]
+    ["endpoint", "status", "mode", "client_ip"]
+)
+
+PAYLOAD_SIZE_BYTES = Summary(
+    "cerebronet_payload_size_bytes",
+    "Summary of incoming payload sizes in bytes"
 )
 INFERENCE_LATENCY = Histogram(
     "cerebronet_inference_latency_seconds",
@@ -142,6 +150,66 @@ transform = None
 params = None
 
 
+# ── Grad-CAM Implementation ───────────────────────────────────────
+class GradCAM:
+    def __init__(self, model, target_layer):
+        self.model = model
+        self.target_layer = target_layer
+        self.gradients = None
+        self.activations = None
+        self.target_layer.register_forward_hook(self.save_activation)
+        self.target_layer.register_full_backward_hook(self.save_gradient)
+        
+    def save_activation(self, module, input, output):
+        self.activations = output.detach()
+        
+    def save_gradient(self, module, grad_input, grad_output):
+        self.gradients = grad_output[0].detach()
+
+    def generate(self, input_tensor, class_idx=None):
+        self.model.eval()
+        # Requires grad for backward pass
+        input_tensor.requires_grad = True
+        output = self.model(input_tensor)
+        
+        if class_idx is None:
+            class_idx = torch.argmax(output, dim=1).item()
+            
+        self.model.zero_grad()
+        output[0, class_idx].backward(retain_graph=True)
+        
+        pooled_gradients = torch.mean(self.gradients, dim=[0, 2, 3])
+        activations = self.activations.squeeze(0)
+        
+        for i in range(activations.size(0)):
+            activations[i, :, :] *= pooled_gradients[i]
+            
+        heatmap = torch.mean(activations, dim=0).squeeze()
+        heatmap = torch.relu(heatmap)
+        heatmap /= torch.max(heatmap) + 1e-8
+        
+        return heatmap.cpu().numpy()
+
+def get_cam_image_base64(heatmap, original_img):
+    # Resize heatmap to match image using PIL
+    heatmap_img = Image.fromarray((heatmap * 255).astype(np.uint8)).resize(original_img.size, Image.Resampling.BILINEAR)
+    
+    # Apply JET colormap
+    cm = plt.get_cmap('jet')
+    heatmap_colored = cm(np.array(heatmap_img)/255.0)
+    heatmap_colored = (heatmap_colored[:, :, :3] * 255).astype(np.uint8)
+    
+    heatmap_colored_img = Image.fromarray(heatmap_colored).convert("RGBA")
+    original_rgba = original_img.convert("RGBA")
+    
+    # Blend images
+    blended = Image.blend(original_rgba, heatmap_colored_img, alpha=0.5)
+    
+    buffered = io.BytesIO()
+    blended.convert("RGB").save(buffered, format="JPEG")
+    return base64.b64encode(buffered.getvalue()).decode()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global model, device, classes, transform, params
@@ -218,8 +286,9 @@ async def ready():
 # Predict endpoint
 @app.post("/predict")
 async def predict(request: Request, file: UploadFile = File(...)):
+    client_ip = request.client.host if request.client else "unknown"
     if model is None:
-        REQUEST_COUNT.labels(endpoint="predict", status="error").inc()
+        REQUEST_COUNT.labels(endpoint="predict", status="error", mode="single", client_ip=client_ip).inc()
         raise HTTPException(status_code=503, detail="Model not loaded")
 
     ACTIVE_REQUESTS.inc()
@@ -228,6 +297,7 @@ async def predict(request: Request, file: UploadFile = File(...)):
     try:
         # Read file
         contents = await file.read()
+        PAYLOAD_SIZE_BYTES.observe(len(contents))
 
         # ── Security validation
         validate_file_security(
@@ -267,7 +337,7 @@ async def predict(request: Request, file: UploadFile = File(...)):
         INFERENCE_LATENCY.observe(latency)
         PREDICTION_COUNTER.labels(predicted_class=pred_class).inc()
         CONFIDENCE_HISTOGRAM.observe(confidence)
-        REQUEST_COUNT.labels(endpoint="predict", status="success").inc()
+        REQUEST_COUNT.labels(endpoint="predict", status="success", mode="single", client_ip=client_ip).inc()
 
         all_probs = {
             classes[i]: round(probs[0][i].item(), 4)
@@ -290,17 +360,145 @@ async def predict(request: Request, file: UploadFile = File(...)):
             "device": str(device),
             "privacy": {
                 "image_stored": False,
+                "image_stored": False,
                 "exif_stripped": True,
-                "data_retained": False
             }
         }
-
     except HTTPException:
         raise
     except Exception as e:
-        REQUEST_COUNT.labels(endpoint="predict", status="error").inc()
-        logger.error(f"Prediction error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        REQUEST_COUNT.labels(endpoint="predict", status="error", mode="single", client_ip=client_ip).inc()
+        logger.error(f"Prediction error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error during prediction")
+
+
+# Predict with Grad-CAM Endpoint
+@app.post("/predict_cam")
+async def predict_cam(request: Request, file: UploadFile = File(...)):
+    client_ip = request.client.host if request.client else "unknown"
+    if model is None:
+        raise HTTPException(status_code=503, detail="Model not loaded")
+
+    start_time = time.time()
+    try:
+        contents = await file.read()
+        image = Image.open(io.BytesIO(contents)).convert("RGB")
+        image = strip_exif(image)
+
+        tensor = transform(image).unsqueeze(0).to(device)
+
+        # Grad-CAM requires gradient calculation, so no torch.no_grad() here
+        cam = GradCAM(model, model.features[-1])
+        heatmap = cam.generate(tensor)
+        
+        # We also need the prediction info
+        with torch.no_grad():
+            outputs = model(tensor)
+            probs = torch.softmax(outputs, dim=1)
+            confidence = probs.max().item()
+            pred_idx = probs.argmax().item()
+            pred_class = classes[pred_idx]
+
+        cam_base64 = get_cam_image_base64(heatmap, image)
+
+        all_probs = {
+            classes[i]: round(probs[0][i].item(), 4)
+            for i in range(len(classes))
+        }
+
+        latency = time.time() - start_time
+        
+        # Log Prometheus Metrics
+        client_ip = request.client.host if request and request.client else "unknown"
+        INFERENCE_LATENCY.observe(latency)
+        PREDICTION_COUNTER.labels(predicted_class=pred_class).inc()
+        CONFIDENCE_HISTOGRAM.observe(confidence)
+        REQUEST_COUNT.labels(endpoint="predict_cam", status="success", mode="single", client_ip=client_ip).inc()
+
+        return {
+            "prediction": pred_class,
+            "confidence": round(confidence, 4),
+            "all_probs": all_probs,
+            "cam_base64": cam_base64,
+            "latency_ms": round(latency * 1000, 2)
+        }
+    except Exception as e:
+        logger.error(f"Grad-CAM error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error generating Grad-CAM")
+
+
+import zipfile
+
+@app.post("/predict_bulk")
+async def predict_bulk(request: Request, file: UploadFile = File(...)):
+    """Accepts a ZIP file of images and returns batch predictions."""
+    client_ip = request.client.host if request.client else "unknown"
+    if model is None:
+        REQUEST_COUNT.labels(endpoint="predict_bulk", status="error", mode="bulk", client_ip=client_ip).inc()
+        raise HTTPException(status_code=503, detail="Model not loaded")
+
+    if not file.filename.endswith(".zip"):
+        raise HTTPException(status_code=400, detail="Only ZIP files are supported for bulk mode.")
+
+    ACTIVE_REQUESTS.inc()
+    start_time = time.time()
+    results = []
+
+    try:
+        contents = await file.read()
+        PAYLOAD_SIZE_BYTES.observe(len(contents))
+        
+        with zipfile.ZipFile(io.BytesIO(contents)) as archive:
+            for item in archive.infolist():
+                if item.is_dir() or not any(item.filename.lower().endswith(ext) for ext in ALLOWED_EXTENSIONS):
+                    continue
+                    
+                with archive.open(item) as img_file:
+                    img_bytes = img_file.read()
+                    
+                    try:
+                        image = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+                        image = strip_exif(image)
+                        tensor = transform(image).unsqueeze(0).to(device)
+                        
+                        with torch.no_grad():
+                            outputs = model(tensor)
+                            probs = torch.softmax(outputs, dim=1)
+                            confidence = probs.max().item()
+                            pred_idx = probs.argmax().item()
+                            pred_class = classes[pred_idx]
+                            
+                        results.append({
+                            "filename": item.filename,
+                            "prediction": pred_class,
+                            "confidence": round(confidence, 4)
+                        })
+                        PREDICTION_COUNTER.labels(predicted_class=pred_class).inc()
+                    except Exception as e:
+                        logger.error(f"Failed to process {item.filename}: {e}")
+                        results.append({
+                            "filename": item.filename,
+                            "error": "Failed to process image"
+                        })
+
+        latency = time.time() - start_time
+        INFERENCE_LATENCY.observe(latency)
+        REQUEST_COUNT.labels(endpoint="predict_bulk", status="success", mode="bulk", client_ip=client_ip).inc()
+        
+        return {
+            "batch_size": len(results),
+            "results": results,
+            "latency_ms": round(latency * 1000, 2),
+            "model": "MobileNetV2"
+        }
+
+    except zipfile.BadZipFile:
+        REQUEST_COUNT.labels(endpoint="predict_bulk", status="error", mode="bulk", client_ip=client_ip).inc()
+        raise HTTPException(status_code=400, detail="Invalid ZIP archive")
+    except Exception as e:
+        logger.error(f"Bulk prediction error: {str(e)}")
+        REQUEST_COUNT.labels(endpoint="predict_bulk", status="error", mode="bulk", client_ip=client_ip).inc()
+        raise HTTPException(status_code=500, detail="Internal server error")
     finally:
         ACTIVE_REQUESTS.dec()
 

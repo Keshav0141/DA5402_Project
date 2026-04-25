@@ -1,0 +1,35 @@
+groups:
+- name: CerebroNet_Alerts
+  rules:
+  
+  # 1. High Error Rate (App Failure)
+  - alert: HighErrorRate
+    expr: rate(cerebronet_requests_total{status="error"}[5m]) > 0.05
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "High API Error Rate Detected"
+      description: "More than 5% of API requests are failing over the last 5 minutes. (Current value: {{ $value }})"
+
+  # 2. Resource Overuse (Node CPU)
+  # Threshold Justification: Bulk ZIP uploads will spike CPU since the MobileNetV2 inference is CPU-bound.
+  # We alert if the load is sustained for 2 minutes to differentiate between normal processing and hung processes.
+  - alert: CPUResourceOveruse
+    expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High CPU Utilization"
+      description: "CPU usage is above 80% for more than 2 minutes. This may affect real-time inference latency during bulk processing."
+
+  # 3. Anomaly (High Inference Latency)
+  - alert: HighInferenceLatency
+    expr: histogram_quantile(0.95, rate(cerebronet_inference_latency_seconds_bucket[5m])) > 1.0
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Anomalous Inference Latency Spike"
+      description: "95th percentile inference latency is above 1.0 seconds. The baseline is typically ~150ms."

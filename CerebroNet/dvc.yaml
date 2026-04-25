@@ -78,3 +78,46 @@ stages:
       - train.early_stopping_patience
       - data.v2_dir
       - data.img_size
+
+  train_svm:
+    cmd: python -u src/training/train_svm.py
+    deps:
+      - src/training/train_svm.py
+      - data/v2_augmented
+    outs:
+      - models/artifacts/svm_model.pkl
+    metrics:
+      - models/artifacts/metrics_svm.json:
+          cache: false
+    params:
+      - data.v2_dir
+      - data.classes
+
+  train_mlp:
+    cmd: python -u src/training/train_mlp.py
+    deps:
+      - src/training/train_mlp.py
+      - data/v2_augmented
+    outs:
+      - models/artifacts/mlp_best.pth
+    metrics:
+      - models/artifacts/metrics_mlp.json:
+          cache: false
+    params:
+      - train.batch_size
+      - train.learning_rate
+      - data.v2_dir
+      - data.classes
+
+  evaluate:
+    cmd: python -u src/pipeline/evaluate.py
+    deps:
+      - src/pipeline/evaluate.py
+      - models/artifacts/mobilenetv2_best.pth
+      - data/v2_augmented/Testing
+    outs:
+      - eval/confusion_matrix.csv
+    params:
+      - data.v2_dir
+      - data.classes
+      - data.img_size
