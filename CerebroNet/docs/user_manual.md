@@ -129,3 +129,4 @@ Project information and credits.
 | Batch mode returns empty results | Ensure the ZIP contains valid .jpg/.jpeg/.png files (not nested in folders) |
 | Airflow shows static data | Wait ~90s after container startup for the Airflow API to become available |
 | Email alerts not sending | Ensure `.env` has a valid Gmail App Password in `SMTP_PASSWORD` and restart containers |
+| Latency is >20s or system freezing | System is out of RAM (OOM). Ensure MLflow has `--workers 1` in `docker-compose.yml` to limit memory usage |

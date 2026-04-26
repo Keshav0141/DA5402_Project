@@ -274,7 +274,23 @@ The platform achieves a 94.8% Macro F1 score with sub-200ms inference latency, b
 
 ---
 
-## 12. Future Work
+## 12. Challenges Faced & Mitigations
+
+| Challenge | Impact | Mitigation |
+|---|---|---|
+| **Streamlit HTML sanitization** | `st.markdown()` strips whitespace and styles from `<pre>` blocks, breaking the DVC DAG ASCII art | Switched to `st.html()` which bypasses the Markdown parser entirely and renders raw HTML |
+| **EfficientNet inference latency** | EfficientNet-B0 achieved highest F1 (0.960) but ~500ms inference was too slow for real-time use | Selected MobileNetV2 (F1: 0.948, <200ms) — 1.2% accuracy gap justified by 2.5× speed gain |
+| **Docker container networking** | Frontend could not resolve backend hostname on first startup | Used Docker DNS with named network `cerebronet_network` and `depends_on` ordering in compose |
+| **EXIF metadata privacy risk** | Uploaded MRI scans could contain GPS coordinates and patient device info | Implemented `strip_exif()` that creates a clean image copy with all metadata removed before inference |
+| **CSS class inheritance in Streamlit** | CSS classes applied via `class=` attribute were not inheriting `text-align` from parent divs | Applied critical styles (centering, colors) as inline `style=` attributes on `<div>` elements instead of `<p>` tags |
+| **Large model artifacts in Git** | `.pth` files (10-25 MB each) bloated the repository | Used DVC to track large artifacts separately; `.gitignore` excludes raw data directories |
+| **Airflow API authentication** | Frontend could not pull live DAG status (401 Unauthorized) | Enabled `basic_auth` backend via `AIRFLOW__API__AUTH_BACKENDS` environment variable |
+| **SMTP email alerting** | Gmail blocks normal password authentication for third-party apps | Used Google App Passwords with credentials externalized in `.env` for security |
+| **Resource Starvation (OOM)** | MLflow spawned 170 threads consuming 1.5GB RAM, causing 27s latency on 8GB machines | Limited MLflow to `--workers 1` and created custom `Dockerfile.airflow` to pre-install dependencies, dropping total RAM usage by >80% |
+
+---
+
+## 13. Future Work
 
 - GPU-accelerated inference for higher throughput
 - DICOM format support for clinical imaging standards

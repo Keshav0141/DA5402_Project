@@ -71,7 +71,9 @@ services:
       - cerebronet_network
 
   airflow:
-    image: apache/airflow:2.8.1
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
     container_name: cerebronet_airflow
     environment:
       - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
@@ -94,7 +96,7 @@ services:
       - AIRFLOW__SMTP__SMTP_PASSWORD=${SMTP_PASSWORD}
       - AIRFLOW__SMTP__SMTP_MAIL_FROM=${SMTP_USER}
       - ALERT_EMAIL=${ALERT_EMAIL}
-      - _PIP_ADDITIONAL_REQUIREMENTS=pydantic prometheus_client requests beautifulsoup4
+
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - airflow_db:/opt/airflow
@@ -106,7 +108,6 @@ services:
         airflow db migrate &&
         airflow users create --username admin --password admin --firstname Admin --lastname Admin --role Admin --email admin@example.com || true &&
         airflow scheduler -D &&
-        sleep 10 &&
         exec airflow webserver --port 8080 --workers 1 --worker-timeout 300
       "
     networks:
@@ -124,7 +125,7 @@ services:
     command: >
       bash -c "
         mlflow db upgrade sqlite:///mlflow.db &&
-        mlflow ui --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlartifacts --host 0.0.0.0 --port 5000
+        mlflow ui --workers 1 --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlartifacts --host 0.0.0.0 --port 5000
       "
     networks:
       - cerebronet_network

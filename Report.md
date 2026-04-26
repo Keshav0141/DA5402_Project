@@ -301,6 +301,7 @@ The platform achieves a 94.8% Macro F1 score with sub-200ms inference latency, b
 | **Large model artifacts in Git** | `.pth` files (10-25 MB each) bloated the repository | Used DVC to track large artifacts separately; `.gitignore` excludes raw data directories |
 | **Airflow API authentication** | Frontend could not pull live DAG status (401 Unauthorized) | Enabled `basic_auth` backend via `AIRFLOW__API__AUTH_BACKENDS` environment variable |
 | **SMTP email alerting** | Gmail blocks normal password authentication for third-party apps | Used Google App Passwords with credentials externalized in `.env` for security |
+| **Resource Starvation (OOM)** | MLflow spawned 170 threads consuming 1.5GB RAM, causing 27s latency on 8GB machines | Limited MLflow to `--workers 1` and created custom `Dockerfile.airflow` to pre-install dependencies, dropping total RAM usage by >80% |
 
 ---
 

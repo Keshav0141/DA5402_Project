@@ -471,7 +471,7 @@ elif page == "Apps Hub":
         </a>
         """, unsafe_allow_html=True)
         st.markdown("""
-        <a href="http://localhost:9090" target="_blank" class="app-card">
+        <a href="http://localhost:9090/targets" target="_blank" class="app-card">
             <div class="app-icon">📈</div>
             <h3>Prometheus</h3>
             <p>Metrics collection and alerting rules</p>
