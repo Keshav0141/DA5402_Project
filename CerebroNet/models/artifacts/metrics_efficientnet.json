@@ -1,0 +1,5 @@
+{
+  "macro_f1": 0.9566,
+  "model": "EfficientNet-B0",
+  "epochs_trained": 16
+}

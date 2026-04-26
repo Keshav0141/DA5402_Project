@@ -1,14 +1,6 @@
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
 # Python
 __pycache__/
+*.pyc
 *.py[cod]
 *$py.class
 *.so
@@ -16,52 +8,44 @@ __pycache__/
 build/
 develop-eggs/
 dist/
-downloads/
 eggs/
 .eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
 *.egg-info/
-.installed.cfg
 *.egg
-MANIFEST
 
-# Jupyter Notebook
-.ipynb_checkpoints
+# Virtual environments
+.env
+.venv/
+venv/
+ENV/
+env.bak/
 
-# VS Code / IDE
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Data and Models
-*.csv
-*.dat
-*.out
-*.log
-*.model
-*.ckpt
-*.pt
-*.pth
-*.h5
-data/
-datasets/
-models/
+# Jupyter
+.ipynb_checkpoints/
 
-# MLOps (MLflow, DVC)
-mlruns/
-*.db
-mlflow.db
+# Raw data (tracked by DVC, too large for Git)
+data/
+
+# DVC internals
+.dvc/cache/
+.dvc/tmp/
 .dvc/config.local
-.dvc/cache
-.dvc/tmp
-*.dvc
+
+# MLflow run data (large, tracked separately)
+mlruns/
 
 # Streamlit
 .streamlit/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temp files
+*.log

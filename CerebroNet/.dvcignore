@@ -1,3 +1,37 @@
-# Add patterns of files dvc should ignore, which could improve
-# the performance. Learn more at
-# https://dvc.org/doc/user-guide/dvcignore
+# DVC should ignore these (not part of data pipeline)
+# Learn more at https://dvc.org/doc/user-guide/dvcignore
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+.venv/
+
+# IDE files
+.vscode/
+.idea/
+
+# Git internals
+.git/
+.git_backup/
+
+# Docker & container data
+grafana_data/
+
+# MLflow run data
+mlruns/
+mlartifacts/
+
+# Airflow internals
+airflow/logs/
+airflow/*.db
+airflow/airflow.cfg
+
+# Frontend assets (not data)
+frontend/__pycache__/
+
+# OS files
+.DS_Store
+Thumbs.db
