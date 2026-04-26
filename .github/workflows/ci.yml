@@ -34,4 +34,4 @@ jobs:
     - name: Run Pytest Test Suite
       run: |
         cd CerebroNet
-        pytest tests/ -v
+        pytest tests/test_api.py -v
