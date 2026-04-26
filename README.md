@@ -37,7 +37,7 @@ The system is designed with **reproducibility, observability, privacy, and deplo
 | Streamlit | Interactive web frontend (8 pages) |
 | MLflow | Experiment tracking, model registry, reproducible runs |
 | DVC + Git | Data versioning, 7-stage reproducible pipeline |
-| Apache Airflow | ETL pipeline orchestration (2 DAGs) |
+| Apache Airflow | ETL pipeline orchestration (2 DAGs) + SMTP email alerts |
 | Prometheus | Real-time metrics scraping (15s interval, 8 custom metrics) |
 | Grafana | 12-panel observability dashboard (auto-provisioned) |
 | Docker Compose | 7-container microservice orchestration |
@@ -75,7 +75,8 @@ DA5402_Project/
 │   │   └── cerebronet_scraper_dag.py   # Data ingestion DAG
 │   ├── prometheus/
 │   │   ├── prometheus.yml              # Scrape config (3 targets)
-│   │   └── alert_rules.yml             # Alert rules
+│   │   ├── alert_rules.yml             # Alert rules (error rate, CPU, latency)
+│   │   └── alertmanager.yml            # Alert notification config
 │   ├── grafana/
 │   │   ├── cerebronet_observability_dashboard.json  # 12-panel dashboard
 │   │   └── provisioning/               # Auto-provisioned datasources
@@ -84,8 +85,9 @@ DA5402_Project/
 │   │   ├── architecture.md             # System architecture document
 │   │   ├── high_level_design.md        # HLD with design rationale
 │   │   ├── low_level_design.md         # LLD with API specs + class definitions
+│   │   ├── project_report.md           # Detailed project report (docs copy)
 │   │   ├── test_plan.md                # 19 test cases + execution report
-│   │   └── user_manual.md             # Page-by-page usage guide
+│   │   └── user_manual.md              # Page-by-page usage guide
 │   ├── docker-compose.yml              # 7-service orchestration
 │   ├── Dockerfile.backend              # FastAPI container
 │   ├── Dockerfile.frontend             # Streamlit container
@@ -94,8 +96,11 @@ DA5402_Project/
 │   ├── params.yaml                     # Centralized hyperparameters
 │   ├── MLproject                       # MLflow project file
 │   ├── conda.yaml                      # Conda environment specification
-│   └── requirements.txt                # pip dependencies
-├── Report.md                           # Comprehensive project report
+│   ├── requirements.txt                # pip dependencies
+│   ├── start_all.ps1                   # One-click launcher script
+│   └── .env                            # Airflow SMTP environment config
+├── Report.md                           # Comprehensive project report (Markdown)
+├── Report.pdf                          # Project report (PDF for submission)
 └── README.md                           # This file
 ```
 
@@ -139,7 +144,7 @@ DA5402_Project/
 |---|---|
 | **Predict** | Single scan + batch ZIP upload with Grad-CAM explainability |
 | **Model Tracker** | MLflow experiment comparison with charts |
-| **Pipeline** | DVC DAG visualization, Airflow status, run history, speed metrics |
+| **Pipeline** | DVC DAG visualization, live Airflow DAG status, run history, speed metrics |
 | **Apps Hub** | Direct links to MLflow, Grafana, Airflow, Prometheus, FastAPI Docs |
 | **Privacy Policy** | Data handling and EXIF stripping documentation |
 | **FAQ** | Common questions about the platform |
@@ -281,6 +286,7 @@ docker exec cerebronet_backend pytest tests/test_api.py -v
 | Architecture | [`CerebroNet/docs/architecture.md`](CerebroNet/docs/architecture.md) | System architecture + container topology |
 | High-Level Design | [`CerebroNet/docs/high_level_design.md`](CerebroNet/docs/high_level_design.md) | Design choices and rationale |
 | Low-Level Design | [`CerebroNet/docs/low_level_design.md`](CerebroNet/docs/low_level_design.md) | API endpoint specs + class definitions |
+| Project Report (docs) | [`CerebroNet/docs/project_report.md`](CerebroNet/docs/project_report.md) | Detailed project report (alternate copy) |
 | Test Plan | [`CerebroNet/docs/test_plan.md`](CerebroNet/docs/test_plan.md) | 19 test cases + execution report |
 | User Manual | [`CerebroNet/docs/user_manual.md`](CerebroNet/docs/user_manual.md) | Page-by-page usage guide |
 
@@ -296,6 +302,6 @@ This project demonstrates a complete MLOps lifecycle:
 * **Monitoring**: Real-time observability with 8 custom metrics and 12-panel Grafana dashboard
 * **Explainability**: Grad-CAM heatmaps for clinical interpretability
 * **Privacy**: Zero-persistence architecture with EXIF stripping
-* **Orchestration**: Airflow DAGs for ETL pipeline automation
+* **Orchestration**: Airflow DAGs for ETL pipeline automation with SMTP email alerts
 
 All rubric requirements have been implemented and validated.

@@ -36,7 +36,7 @@ def dry_pipeline_alert(context):
     """Triggered if FileSensor times out (12 hours without a new target file)."""
     subject = "ALERT: Dry Pipeline - No Target Lists Detected"
     body = "The Web Scraper Pipeline has not received a new target CSV file within the 12-hour timeout window. Please check the upstream data ingestion."
-    send_email(to="admin@example.com", subject=subject, html_content=body)
+    send_email(to=os.getenv("ALERT_EMAIL", "frozenvictorxi@gmail.com"), subject=subject, html_content=body)
     logging.warning("Dry Pipeline Email Alert Sent.")
 
 def broken_link_alert(context):
@@ -46,7 +46,7 @@ def broken_link_alert(context):
     
     subject = f"ALERT: Broken Link Failure - {url}"
     body = f"The scraping task failed for URL: {url}. It likely returned a 404 or timed out."
-    send_email(to="admin@example.com", subject=subject, html_content=body)
+    send_email(to=os.getenv("ALERT_EMAIL", "frozenvictorxi@gmail.com"), subject=subject, html_content=body)
     logging.error(f"Broken Link Email Alert Sent for {url}.")
 
 # --- Data Validation Schema (Pydantic) ---
@@ -180,7 +180,7 @@ def check_batch_threshold(**kwargs):
     if total_pages > 0 and total_pages % 10 == 0:
         subject = f"Collection Statistics: {total_pages} Pages Scraped!"
         body = f"The pipeline has successfully accumulated {total_pages} scraped domains in the database."
-        send_email(to="admin@example.com", subject=subject, html_content=body)
+        send_email(to=os.getenv("ALERT_EMAIL", "frozenvictorxi@gmail.com"), subject=subject, html_content=body)
         logging.info("Batch Notification Email Sent.")
 
 # --- DAG Definition ---

@@ -32,7 +32,7 @@ CerebroNet is an end-to-end Machine Learning pipeline that classifies brain MRI 
 │                                                                          │
 │  ┌──────────────┐                                                        │
 │  │   Airflow     │  Orchestrates data ingestion DAGs                     │
-│  │   :8080       │  and ETL pipelines                                    │
+│  │   :8080       │  and ETL pipelines + SMTP email alerts                │
 │  └──────────────┘                                                        │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -53,7 +53,7 @@ Docker and Docker Compose orchestrate 7 isolated microservices:
 - **Prometheus** — Metrics scraping at 15s intervals
 - **Grafana** — 12-panel observability dashboard (auto-provisioned)
 - **Node Exporter** — Host CPU/memory metrics
-- **Airflow** — ETL DAG orchestration
+- **Airflow** — ETL DAG orchestration + SMTP email alerts (Success/Failure)
 
 This guarantees environment parity across development and production as mandated by the rubric.
 
@@ -117,6 +117,7 @@ Raw Data (5,712 images)
 | Backend | FastAPI + PyTorch | Async API server with GPU-ready inference |
 | Experiment Tracking | MLflow | Industry standard for ML experiment management |
 | Data Versioning | DVC + Git | Large dataset management without cloud storage |
-| Orchestration | Apache Airflow | DAG-based ETL pipeline scheduling |
+| Orchestration | Apache Airflow | DAG-based ETL pipeline scheduling + email alerts |
 | Monitoring | Prometheus + Grafana | Real-time metrics collection and visualization |
 | Containerization | Docker Compose | Multi-service orchestration with network isolation |
+| Alerting | Gmail SMTP | Automated pipeline success/failure notifications |

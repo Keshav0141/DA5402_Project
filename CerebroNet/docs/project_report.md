@@ -165,6 +165,12 @@ prepare → transform → train_baseline → train_mobilenet → train_efficient
 - `cerebronet_dag`: Data preparation and model training orchestration
 - `cerebronet_scraper_dag`: External data ingestion and ETL
 
+**Features:**
+- Automated email alerts (Success/Failure) via Gmail SMTP
+- Credentials externalized in `.env` file (`SMTP_USER`, `SMTP_PASSWORD`, `ALERT_EMAIL`)
+- REST API authentication enabled for live frontend integration
+- Airflow UI accessible at `localhost:8080` (admin/admin)
+
 ### 7.4 Monitoring — Prometheus + Grafana
 
 **8 custom Prometheus metrics** instrumented natively in FastAPI:
@@ -206,7 +212,7 @@ prepare → transform → train_baseline → train_mobilenet → train_efficient
 |---|---|
 | Predict | Single scan + batch ZIP upload with Grad-CAM |
 | Model Tracker | MLflow experiment comparison with charts |
-| Pipeline | DVC DAG, Airflow status, run history, speed metrics |
+| Pipeline | DVC DAG, live Airflow DAG status (real-time API), run history, speed metrics |
 | Apps Hub | Direct links to MLflow, Grafana, Airflow, Prometheus, FastAPI Docs |
 | Privacy Policy | Data handling and EXIF stripping documentation |
 | FAQ | Common questions about the platform |
@@ -262,6 +268,7 @@ CerebroNet successfully demonstrates a complete MLOps lifecycle:
 4. **Monitoring**: Real-time observability with 8 custom metrics and 12-panel dashboard
 5. **Explainability**: Grad-CAM heatmaps for clinical interpretability
 6. **Privacy**: Zero-persistence architecture with EXIF stripping
+7. **Alerting**: Automated email notifications on pipeline success/failure via SMTP
 
 The platform achieves a 94.8% Macro F1 score with sub-200ms inference latency, balancing accuracy and speed for real-time clinical screening.
 

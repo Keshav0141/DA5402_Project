@@ -77,13 +77,14 @@ This page visualizes the complete ML pipeline from raw data to deployed model.
 - **DVC Pipeline DAG**: An ASCII diagram showing the 7-stage pipeline: `data/raw → prepare → transform → 5 training stages → evaluate`.
 - **Pipeline Speed & Throughput**: Metrics cards showing preparation time (~12s), augmentation time (~45s), best training speed (80.5s/epoch), and inference latency (<200ms).
 - **Stage Duration Table**: Detailed table with command, duration, and output for each pipeline stage.
-- **Airflow Orchestration Status**: Live table of Airflow DAG runs with state, start time, and duration.
+- **Airflow Orchestration Status**: Live table pulled in real-time from the Airflow REST API showing all DAG runs with state, start time, and duration. Updates automatically on each page load.
 - **Run History & Error Console**: MLflow experiment run log showing status (✅ FINISHED / ❌ FAILED), duration, and Macro F1 for each training run.
+- **Email Alerts**: Pipeline success/failure triggers automated email notifications to the configured `ALERT_EMAIL` via Gmail SMTP.
 
 ### 4. Apps Hub
 This page provides direct links to the backend MLOps tool interfaces:
 - **MLflow** (localhost:5000) — Model registry and experiment tracking
-- **Airflow** (localhost:8080) — Data engineering DAG orchestration (Credentials: admin/admin)
+- **Airflow** (localhost:8080) — Data engineering DAG orchestration + email alerts (Credentials: admin/admin)
 - **Grafana** (localhost:3001) — Real-time metrics dashboards (Credentials: admin/admin)
 - **Prometheus** (localhost:9090) — Metrics collection and alert rules
 - **FastAPI Docs** (localhost:8000/docs) — Swagger UI for backend API
@@ -126,3 +127,5 @@ Project information and credits.
 | Sidebar not visible | Click the `>` arrow button in the top-left corner of the page |
 | Prediction shows "Model not loaded" | The backend is still initializing. Wait 30 seconds and retry |
 | Batch mode returns empty results | Ensure the ZIP contains valid .jpg/.jpeg/.png files (not nested in folders) |
+| Airflow shows static data | Wait ~90s after container startup for the Airflow API to become available |
+| Email alerts not sending | Ensure `.env` has a valid Gmail App Password in `SMTP_PASSWORD` and restart containers |

@@ -2,24 +2,75 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
+from airflow.operators.email import EmailOperator
+from airflow.utils.email import send_email
 import os
 import shutil
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Default args
+# ── Email Notification Callbacks ────────────────────────────────
+ALERT_EMAIL = os.getenv("ALERT_EMAIL", "frozenvictorxi@gmail.com")
+
+def on_success_email(context):
+    """Send email notification on successful DAG completion."""
+    dag_id = context['dag'].dag_id
+    run_id = context['run_id']
+    execution_date = context['execution_date']
+    
+    subject = f"✅ CerebroNet Pipeline SUCCESS — {dag_id}"
+    body = f"""
+    <h2>Pipeline Completed Successfully</h2>
+    <table border="1" cellpadding="5" style="border-collapse: collapse;">
+        <tr><td><b>DAG</b></td><td>{dag_id}</td></tr>
+        <tr><td><b>Run ID</b></td><td>{run_id}</td></tr>
+        <tr><td><b>Execution Date</b></td><td>{execution_date}</td></tr>
+        <tr><td><b>Status</b></td><td>✅ SUCCESS</td></tr>
+    </table>
+    <br>
+    <p>All 6 tasks completed: data check → validation → baseline stats → drift detection → API health → report.</p>
+    <p><b>Model:</b> MobileNetV2 | <b>Macro F1:</b> 0.948</p>
+    """
+    send_email(to=ALERT_EMAIL, subject=subject, html_content=body)
+    logger.info(f"Success email sent to {ALERT_EMAIL}")
+
+def on_failure_email(context):
+    """Send email notification on task failure."""
+    dag_id = context['dag'].dag_id
+    task_id = context['task_instance'].task_id
+    exception = context.get('exception', 'Unknown')
+
+    subject = f"❌ CerebroNet Pipeline FAILURE — {dag_id}/{task_id}"
+    body = f"""
+    <h2 style="color: red;">Pipeline Task Failed</h2>
+    <table border="1" cellpadding="5" style="border-collapse: collapse;">
+        <tr><td><b>DAG</b></td><td>{dag_id}</td></tr>
+        <tr><td><b>Failed Task</b></td><td>{task_id}</td></tr>
+        <tr><td><b>Error</b></td><td>{exception}</td></tr>
+        <tr><td><b>Time</b></td><td>{datetime.now()}</td></tr>
+    </table>
+    <br>
+    <p>Please check the Airflow UI at <a href="http://localhost:8080">localhost:8080</a> for details.</p>
+    """
+    send_email(to=ALERT_EMAIL, subject=subject, html_content=body)
+    logger.info(f"Failure email sent to {ALERT_EMAIL}")
+
+
+# ── Default args ────────────────────────────────────────────────
 default_args = {
     "owner": "cerebronet",
     "depends_on_past": False,
     "start_date": datetime(2026, 1, 1),
-    "email_on_failure": False,
+    "email": [ALERT_EMAIL],
+    "email_on_failure": True,
     "email_on_retry": False,
     "retries": 1,
     "retry_delay": timedelta(minutes=2),
+    "on_failure_callback": on_failure_email,
 }
 
-# DAG definition 
+# ── DAG definition ──────────────────────────────────────────────
 dag = DAG(
     "cerebronet_pipeline",
     default_args=default_args,
@@ -27,10 +78,11 @@ dag = DAG(
     schedule_interval=timedelta(days=1),
     catchup=False,
     tags=["cerebronet", "mlops", "brain-tumor"],
+    on_success_callback=on_success_email,
 )
 
 
-# Task functions
+# ── Task functions ──────────────────────────────────────────────
 def check_data_availability(**context):
     data_path = "/opt/airflow/dags"
     logger.info(f"Checking data availability at: {data_path}")
@@ -101,7 +153,7 @@ def generate_pipeline_report(**context):
     return report
 
 
-# Task definitions 
+# ── Task definitions ────────────────────────────────────────────
 t1 = PythonOperator(
     task_id="check_data_availability",
     python_callable=check_data_availability,
@@ -138,5 +190,25 @@ t6 = PythonOperator(
     dag=dag,
 )
 
-# Pipeline order
-t1 >> t2 >> t3 >> t4 >> t5 >> t6
+# ── Email notification task (final step) ────────────────────────
+t7 = EmailOperator(
+    task_id="send_completion_email",
+    to=ALERT_EMAIL,
+    subject="📊 CerebroNet Pipeline Run Complete — {{ ds }}",
+    html_content="""
+    <h2>CerebroNet Daily Pipeline Report</h2>
+    <p>The CerebroNet data pipeline has completed successfully.</p>
+    <table border="1" cellpadding="5" style="border-collapse: collapse;">
+        <tr><td><b>Run Date</b></td><td>{{ ds }}</td></tr>
+        <tr><td><b>Tasks</b></td><td>6/6 Completed</td></tr>
+        <tr><td><b>Model</b></td><td>MobileNetV2 (Macro F1: 0.948)</td></tr>
+        <tr><td><b>Data Drift</b></td><td>Not Detected</td></tr>
+    </table>
+    <br>
+    <p>View full details at <a href="http://localhost:8080">Airflow UI</a></p>
+    """,
+    dag=dag,
+)
+
+# ── Pipeline order ──────────────────────────────────────────────
+t1 >> t2 >> t3 >> t4 >> t5 >> t6 >> t7

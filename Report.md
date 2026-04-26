@@ -167,6 +167,10 @@ prepare → transform → train_baseline → train_mobilenet → train_efficient
 - `cerebronet_dag`: Data preparation and model training orchestration
 - `cerebronet_scraper_dag`: External data ingestion and ETL
 
+**Features:**
+- Automated email alerts (Success/Failure) configured via SMTP `.env` integration
+- Airflow UI accessible at `localhost:8080`
+
 ### 7.4 Monitoring — Prometheus + Grafana
 
 **8 custom Prometheus metrics** instrumented natively in FastAPI:
@@ -206,16 +210,31 @@ prepare → transform → train_baseline → train_mobilenet → train_efficient
 
 | Page | Purpose |
 |---|---|
-| Predict | Single scan + batch ZIP upload with Grad-CAM |
+| Predict | Single scan classification with Grad-CAM + Batch ZIP upload for bulk processing |
 | Model Tracker | MLflow experiment comparison with charts |
-| Pipeline | DVC DAG, Airflow status, run history, speed metrics |
+| Pipeline | DVC DAG, live Airflow DAG status (real-time REST API), run history, speed metrics |
 | Apps Hub | Direct links to MLflow, Grafana, Airflow, Prometheus, FastAPI Docs |
 | Privacy Policy | Data handling and EXIF stripping documentation |
 | FAQ | Common questions about the platform |
 | Contact Us | Support inquiry form |
 | About | Project credits |
 
-### 8.3 Foolproof Design
+### 8.3 Prediction Modes
+
+**Single Scan Mode:**
+- Upload a brain MRI scan (JPEG/PNG, max 10MB) via drag-and-drop
+- Instant classification result with confidence score and inference latency
+- Grad-CAM explainability heatmap showing which regions the model focused on
+- Probability distribution bar chart across all 4 classes
+- Dynamic brain visualization shifts color to match the prediction (Red = Glioma, Yellow = Meningioma, Green = No Tumor, Blue = Pituitary)
+
+**Batch Mode (ZIP Upload):**
+- Upload a ZIP archive containing multiple MRI scans
+- Calls the `/predict_bulk` endpoint to process all images in one request
+- Displays a results table with filename, prediction, confidence, and latency per image
+- Handles mixed valid/invalid files gracefully — invalid images are reported with error messages
+
+### 8.4 Foolproof Design
 - File type validation (JPEG/PNG only)
 - 10MB upload size limit with clear error messages
 - Graceful handling of API unavailability
@@ -264,6 +283,7 @@ CerebroNet successfully demonstrates a complete MLOps lifecycle:
 4. **Monitoring**: Real-time observability with 8 custom metrics and 12-panel dashboard
 5. **Explainability**: Grad-CAM heatmaps for clinical interpretability
 6. **Privacy**: Zero-persistence architecture with EXIF stripping
+7. **Alerting**: Automated email notifications on pipeline success/failure via Gmail SMTP
 
 The platform achieves a 94.8% Macro F1 score with sub-200ms inference latency, balancing accuracy and speed for real-time clinical screening.
 
@@ -279,6 +299,8 @@ The platform achieves a 94.8% Macro F1 score with sub-200ms inference latency, b
 | **EXIF metadata privacy risk** | Uploaded MRI scans could contain GPS coordinates and patient device info | Implemented `strip_exif()` that creates a clean image copy with all metadata removed before inference |
 | **CSS class inheritance in Streamlit** | CSS classes applied via `class=` attribute were not inheriting `text-align` from parent divs | Applied critical styles (centering, colors) as inline `style=` attributes on `<div>` elements instead of `<p>` tags |
 | **Large model artifacts in Git** | `.pth` files (10-25 MB each) bloated the repository | Used DVC to track large artifacts separately; `.gitignore` excludes raw data directories |
+| **Airflow API authentication** | Frontend could not pull live DAG status (401 Unauthorized) | Enabled `basic_auth` backend via `AIRFLOW__API__AUTH_BACKENDS` environment variable |
+| **SMTP email alerting** | Gmail blocks normal password authentication for third-party apps | Used Google App Passwords with credentials externalized in `.env` for security |
 
 ---
 

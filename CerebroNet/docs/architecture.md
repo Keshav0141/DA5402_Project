@@ -95,6 +95,7 @@ Tracks experiments across 5 model architectures:
 Automates ETL with 2 DAGs:
 - `cerebronet_dag`: Data preparation and model training orchestration
 - `cerebronet_scraper_dag`: Data ingestion from external sources
+- **Email Alerting**: Automated success/failure notifications via SMTP (`.env` configuration)
 
 ### 5. Data Versioning (DVC + Git, Host)
 Manages the reproducible ML pipeline:

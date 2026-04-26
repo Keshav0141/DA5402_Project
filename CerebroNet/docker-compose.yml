@@ -80,11 +80,20 @@ services:
       - AIRFLOW__WEBSERVER__WORKERS=1
       - AIRFLOW__CORE__PARALLELISM=1
       - AIRFLOW__CORE__DAG_CONCURRENCY=1
+      - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
       - _AIRFLOW_DB_UPGRADE=true
       - _AIRFLOW_WWW_USER_CREATE=true
       - _AIRFLOW_WWW_USER_USERNAME=admin
       - _AIRFLOW_WWW_USER_PASSWORD=admin
       - AIRFLOW__WEBSERVER__WEB_SERVER_MASTER_TIMEOUT=600
+      - AIRFLOW__SMTP__SMTP_HOST=smtp.gmail.com
+      - AIRFLOW__SMTP__SMTP_PORT=587
+      - AIRFLOW__SMTP__SMTP_STARTTLS=true
+      - AIRFLOW__SMTP__SMTP_SSL=false
+      - AIRFLOW__SMTP__SMTP_USER=${SMTP_USER}
+      - AIRFLOW__SMTP__SMTP_PASSWORD=${SMTP_PASSWORD}
+      - AIRFLOW__SMTP__SMTP_MAIL_FROM=${SMTP_USER}
+      - ALERT_EMAIL=${ALERT_EMAIL}
       - _PIP_ADDITIONAL_REQUIREMENTS=pydantic prometheus_client requests beautifulsoup4
     volumes:
       - ./airflow/dags:/opt/airflow/dags
@@ -93,6 +102,7 @@ services:
       - "8080:8080"
     command: >
       bash -c "
+        rm -f /opt/airflow/airflow-webserver.pid &&
         airflow db migrate &&
         airflow users create --username admin --password admin --firstname Admin --lastname Admin --role Admin --email admin@example.com || true &&
         airflow scheduler -D &&
