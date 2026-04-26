@@ -73,12 +73,10 @@ The system is designed to be fully in-memory:
 - No image is ever written to disk — `del contents, image, tensor` is called post-inference
 - EXIF stripping removes GPS coordinates, timestamps, and device identifiers
 
-### 5. Data Versioning with DVC
-DVC is utilized alongside Git to manage large datasets:
-- `dvc.yaml` defines 7 pipeline stages (prepare → transform → 5 trainers → evaluate)
-- `params.yaml` centralizes hyperparameters for reproducibility
-- Data artifacts are version-controlled without bloating the Git repository
-- Full pipeline reproducible via `dvc repro`
+### 5. Dual-Layer Continuous Integration (CI)
+The project implements a comprehensive dual-layer CI architecture:
+- **MLOps CI (DVC)**: `dvc.yaml` defines a 7-stage pipeline (prepare → transform → 5 trainers → evaluate). DVC handles large data artifacts locally, ensuring reproducibility (`dvc repro`) without cloud storage.
+- **Software Engineering CI (GitHub Actions)**: `.github/workflows/ci.yml` runs automated Pytest checks on every code push. To bypass the "No Cloud" restriction that prevents DVC from pulling the 10MB model to the remote GitHub runner, the CI pipeline dynamically imports the custom `build_mobilenet` architecture from `main.py` and generates a PyTorch mock on the fly. This ensures the 28 automated assertions pass perfectly in the cloud.
 
 ### 6. Observability Stack
 Prometheus instrumentation is natively embedded into the FastAPI application with 8 custom metrics:
@@ -116,7 +114,7 @@ Raw Data (5,712 images)
 | Frontend | Streamlit | Rapid prototyping with Python-native components |
 | Backend | FastAPI + PyTorch | Async API server with GPU-ready inference |
 | Experiment Tracking | MLflow | Industry standard for ML experiment management |
-| Data Versioning | DVC + Git | Large dataset management without cloud storage |
+| Continuous Integration | DVC + GitHub Actions | Dual-layer CI for both data/models (DVC) and code testing (GitHub Actions) |
 | Orchestration | Apache Airflow | DAG-based ETL pipeline scheduling + email alerts |
 | Monitoring | Prometheus + Grafana | Real-time metrics collection and visualization |
 | Containerization | Docker Compose | Multi-service orchestration with network isolation |

@@ -45,16 +45,19 @@ This document specifies the software test plan and execution report for CerebroN
 | TC-19 | Pipeline | Run `dvc repro --dry` | All 7 stages listed in correct dependency order | PASSED |
 
 ## Test Report
-- **Total Test Cases**: 19
+- **Total Test Cases**: 19 (Evaluating 28 individual assertions)
 - **Passed**: 19
 - **Failed**: 0
-- **Coverage**: Core inference loop and security barriers have 100% automated test coverage via `tests/test_api.py` (22 pytest assertions). UI color tests verified via `tests/test_ui_colors.py`.
+- **Coverage**: Core inference loop and security barriers have 100% automated test coverage via `tests/test_api.py` (28 pytest assertions). UI color tests verified via `tests/test_ui_colors.py`.
 
 ## Test Execution
+Tests are executed through a dual-layer strategy:
+
+**1. Automated CI/CD (GitHub Actions)**
+On every `git push`, the `.github/workflows/ci.yml` pipeline automatically provisions an Ubuntu server, installs all dependencies, dynamically generates a PyTorch architecture mock (to bypass cloud data limitations), and executes the full Pytest suite.
+
+**2. Local Execution (Docker)**
 ```bash
 # Run all tests inside the backend container
 docker exec cerebronet_backend pytest tests/ -v
-
-# Run specific test suite
-docker exec cerebronet_backend pytest tests/test_api.py -v
 ```
