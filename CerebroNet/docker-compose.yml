@@ -102,14 +102,7 @@ services:
       - airflow_db:/opt/airflow
     ports:
       - "8080:8080"
-    command: >
-      bash -c "
-        rm -f /opt/airflow/airflow-webserver.pid &&
-        airflow db migrate &&
-        airflow users create --username admin --password admin --firstname Admin --lastname Admin --role Admin --email admin@example.com || true &&
-        airflow scheduler -D &&
-        exec airflow webserver --port 8080 --workers 1 --worker-timeout 300
-      "
+    command: bash -c "rm -f /opt/airflow/airflow-webserver.pid && airflow scheduler -D && exec airflow webserver --port 8080 --workers 1 --worker-timeout 300"
     networks:
       - cerebronet_network
 
