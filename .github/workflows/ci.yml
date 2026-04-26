@@ -21,8 +21,15 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        pip install torch==2.6.0+cpu torchvision==0.21.0+cpu --index-url https://download.pytorch.org/whl/cpu
         pip install pytest fastapi httpx starlette pydantic prometheus_client
         if [ -f "CerebroNet/requirements.txt" ]; then pip install -r CerebroNet/requirements.txt; fi
+
+    - name: Generate Dummy Model for Tests
+      run: |
+        cd CerebroNet
+        mkdir -p models/artifacts
+        python -c "import torch; from torchvision.models import mobilenet_v2; m = mobilenet_v2(num_classes=4); torch.save(m.state_dict(), 'models/artifacts/mobilenetv2_best.pth')"
 
     - name: Run Pytest Test Suite
       run: |
