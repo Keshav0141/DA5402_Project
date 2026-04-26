@@ -29,7 +29,7 @@ jobs:
       run: |
         cd CerebroNet
         mkdir -p models/artifacts
-        python -c "import torch; from torchvision.models import mobilenet_v2; m = mobilenet_v2(num_classes=4); torch.save(m.state_dict(), 'models/artifacts/mobilenetv2_best.pth')"
+        python -c "import torch, sys, os; sys.path.insert(0, os.getcwd()); from src.api.main import build_mobilenet; m = build_mobilenet(4); torch.save(m.state_dict(), 'models/artifacts/mobilenetv2_best.pth')"
 
     - name: Run Pytest Test Suite
       run: |
