@@ -1,7 +1,9 @@
 # CerebroNet — Project Report
 
 **Course:** DA5402 — AI Application Development  
-**Project:** Brain Tumor Classification MLOps Platform
+**Project:** Brain Tumor Classification MLOps Platform  
+**Student:** Aryan Prasad  
+**Roll Number:** DA25M007
 
 ---
 
