@@ -14,3 +14,7 @@ entry_points:
     command: "python src/training/train_svm.py"
   train_mlp:
     command: "python src/training/train_mlp.py"
+  train_resnet:
+    command: "python src/training/train_resnet.py"
+  train_vgg:
+    command: "python src/training/train_vgg.py"

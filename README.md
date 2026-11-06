@@ -13,6 +13,7 @@ This project implements an **end-to-end brain tumor classification platform** wi
 
 * Classifies brain MRI scans into 4 categories: **Glioma, Meningioma, Pituitary, No Tumor**
 * Trains and compares **5 model architectures** (BaseCNN, MobileNetV2, EfficientNet-B0, SVM, MLP)
+* Heavy ImageNet CNN baselines (**ResNet-50**, **VGG-16-BN**) available as MLflow entry points (`mlflow run . -e train_resnet` / `-e train_vgg`), kept outside the default DVC pipeline because of their compute cost
 * Tracks all experiments via **MLflow** with parameters, metrics, and artifacts
 * Manages a **7-stage reproducible DVC pipeline** (prepare → transform → 5 trainers → evaluate)
 * Orchestrates data ingestion via **Apache Airflow** (2 DAGs)
@@ -67,7 +68,10 @@ DA5402_Project/
 │   │       ├── train_mobilenet.py      # MobileNetV2 (F1: 0.948) ← DEPLOYED
 │   │       ├── train_efficientnet.py   # EfficientNet-B0 (F1: 0.960)
 │   │       ├── train_svm.py            # SVM (F1: 0.859)
-│   │       └── train_mlp.py            # MLP (F1: 0.840)
+│   │       ├── train_mlp.py            # MLP (F1: 0.840)
+│   │       ├── train_resnet.py         # ResNet-50 (heavy baseline, MLflow entry point)
+│   │       ├── train_vgg.py            # VGG-16-BN (heavy baseline, MLflow entry point)
+│   │       └── cnn_finetune.py         # Shared fine-tuning loop for the heavy baselines
 │   ├── tests/
 │   │   ├── test_api.py                 # 12 API test cases
 │   │   └── test_ui_colors.py           # 4 UI color-mapping test cases
