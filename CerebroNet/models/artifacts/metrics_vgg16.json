@@ -1,0 +1,6 @@
+{
+  "macro_f1": 0.9546,
+  "val_acc": 0.9556,
+  "model": "VGG-16-BN",
+  "epochs_trained": 12
+}

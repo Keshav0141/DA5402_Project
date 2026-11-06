@@ -1,0 +1,6 @@
+{
+  "macro_f1": 0.9497,
+  "val_acc": 0.9506,
+  "model": "ResNet-50",
+  "epochs_trained": 20
+}

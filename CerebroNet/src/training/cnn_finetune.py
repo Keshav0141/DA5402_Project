@@ -21,9 +21,17 @@ from sklearn.metrics import f1_score, classification_report
 import mlflow
 import mlflow.pytorch
 
+import sys
+
+# Windows consoles default to cp1252; MLflow prints emoji at end of run.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(message)s"
+    format="%(asctime)s | %(levelname)s | %(message)s",
+    force=True,  # imported libraries may install root handlers first
 )
 logger = logging.getLogger(__name__)
 

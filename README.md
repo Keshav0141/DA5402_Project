@@ -13,7 +13,7 @@ This project implements an **end-to-end brain tumor classification platform** wi
 
 * Classifies brain MRI scans into 4 categories: **Glioma, Meningioma, Pituitary, No Tumor**
 * Trains and compares **5 model architectures** (BaseCNN, MobileNetV2, EfficientNet-B0, SVM, MLP)
-* Heavy ImageNet CNN baselines (**ResNet-50**, **VGG-16-BN**) available as MLflow entry points (`mlflow run . -e train_resnet` / `-e train_vgg`), kept outside the default DVC pipeline because of their compute cost
+* Heavy ImageNet CNN baselines (**ResNet-50**, **VGG-16-BN**) available as MLflow entry points (`mlflow run . -e train_resnet` / `-e train_vgg`), kept outside the default DVC pipeline because of their compute cost (ResNet-50: F1 0.950 / 95.1% acc; VGG-16-BN: F1 0.955 / 95.6% acc; checkpoints not committed due to size)
 * Tracks all experiments via **MLflow** with parameters, metrics, and artifacts
 * Manages a **7-stage reproducible DVC pipeline** (prepare → transform → 5 trainers → evaluate)
 * Orchestrates data ingestion via **Apache Airflow** (2 DAGs)
@@ -69,8 +69,8 @@ DA5402_Project/
 │   │       ├── train_efficientnet.py   # EfficientNet-B0 (F1: 0.960)
 │   │       ├── train_svm.py            # SVM (F1: 0.859)
 │   │       ├── train_mlp.py            # MLP (F1: 0.840)
-│   │       ├── train_resnet.py         # ResNet-50 (heavy baseline, MLflow entry point)
-│   │       ├── train_vgg.py            # VGG-16-BN (heavy baseline, MLflow entry point)
+│   │       ├── train_resnet.py         # ResNet-50 (F1: 0.950, heavy baseline)
+│   │       ├── train_vgg.py            # VGG-16-BN (F1: 0.955, heavy baseline)
 │   │       └── cnn_finetune.py         # Shared fine-tuning loop for the heavy baselines
 │   ├── tests/
 │   │   ├── test_api.py                 # 12 API test cases
@@ -181,6 +181,8 @@ Gradient-weighted Class Activation Mapping on MobileNetV2's last convolutional l
 | Model | Macro F1 | Val Accuracy | Speed/Epoch | Inference | Deployed |
 |---|---|---|---|---|---|
 | EfficientNet-B0 | **0.960** | 96.5% | 650s | ~500ms | ❌ |
+| VGG-16-BN | 0.955 | 95.6% | 170s (GTX 1650) | — | ❌ |
+| ResNet-50 | 0.950 | 95.1% | 123s (GTX 1650) | — | ❌ |
 | **MobileNetV2** | **0.948** | 95.2% | 80.5s | <200ms | ✅ |
 | SVM | 0.859 | 87.1% | — | <50ms | ❌ |
 | MLP | 0.840 | 85.3% | 45s | <30ms | ❌ |
